@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Đặt lịch hẹn - Tâm Chính</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f5f7; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .booking-container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .info-panel {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            width: 35%;
+            border-right: 1px solid #eaeaeb;
+        }
+        
+        .brand-section { text-align: center; margin-bottom: 25px; }
+        .brand-logo { max-width: 180px; height: auto; display: block; margin: 0 auto 10px auto; }
+        .brand-name { font-size: 20px; color: #1a1a1a; font-weight: 700; margin: 0; }
+
+        .info-panel h1 { color: #1a1a1a; font-size: 22px; margin-bottom: 20px; text-align: center; }
+        .info-panel p { color: #666; display: flex; align-items: center; margin-bottom: 12px; font-size: 15px; }
+        .info-panel p span { margin-right: 10px; font-size: 18px; }
+
+        .selection-panel {
+            padding: 40px 30px;
+            width: 65%;
+            display: flex;
+            gap: 30px;
+        }
+
+        .calendar-section { width: 60%; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-header h3 { font-size: 18px; color: #1a1a1a; }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .day-name { font-size: 12px; color: #1a1a1a; font-weight: bold; text-transform: uppercase; }
+        .day-btn {
+            background: #f4f5f7; border: none; border-radius: 50%; width: 40px; height: 40px;
+            cursor: pointer; font-size: 14px; font-weight: 600; color: #0060e6; transition: 0.2s;
+        }
+        .day-btn:hover:not(:disabled), .day-btn.active { background: #0060e6; color: #ffffff; }
+        .day-btn:disabled { color: #ccc; cursor: not-allowed; background: transparent; }
+
+        .time-section {
+            width: 40%; display: none; flex-direction: column; gap: 10px; height: 300px; overflow-y: auto;
+        }
+        .time-section h3 { font-size: 16px; margin-bottom: 10px; color: #666; text-align: center; }
+        
+        .time-btn {
+            background: #ffffff; border: 1px solid #0060e6; color: #0060e6; padding: 12px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s;
+        }
+        .time-btn:hover:not(:disabled) { border-width: 2px; padding: 11px; }
+        
+        .time-btn:disabled {
+            border-color: #eaeaeb; color: #aaaaaa; background-color: #f9f9f9; cursor: not-allowed; opacity: 0.7;
+        }
+
+        #booking-form { display: none; width: 100%; padding-left: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333;}
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .submit-btn {
+            background: #0060e6; color: white; border: none; padding: 12px 20px; 
+            border-radius: 20px; cursor: pointer; font-weight: bold; width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="booking-container">
+    <div class="info-panel">
+        <div class="brand-section">
+            <img src="logo.png" alt="Logo Tâm Chính" class="brand-logo">
+            <h2 class="brand-name">Tâm Lý Tâm Chính</h2>
+        </div>
+        
+        <h1>Đặt Lịch Tham Vấn</h1>
+        <p><span>⏱</span> 60 Phút</p>
+        <p><span>📍</span> Tham vấn online, offline</p>
+        <p style="margin-top: 20px; font-size: 14px; line-height: 1.5;">
+            Vui lòng chọn ngày và khung giờ phù hợp để đặt lịch trực tiếp với chuyên gia của Tâm Chính.
+        </p>
+    </div>
+
+    <div class="selection-panel" id="selection-area">
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <h3 id="month-year-display">Tháng ... Năm ...</h3>
+            </div>
+            <div class="calendar-grid" id="calendar"></div>
+        </div>
+
+        <div class="time-section" id="time-slots">
+            <h3 id="selected-date-text">...</h3>
+            <button class="time-btn" data-time="09:00" onclick="showForm('09:00')">09:00</button>
+            <button class="time-btn" data-time="11:00" onclick="showForm('11:00')">11:00</button>
+            <button class="time-btn" data-time="14:00" onclick="showForm('14:00')">14:00</button>
+            <button class="time-btn" data-time="16:00" onclick="showForm('16:00')">16:00</button>
+        </div>
+    </div>
+
+    <div id="booking-form">
+        <h3 style="margin-bottom: 20px;">Nhập thông tin của bạn</h3>
+        <p id="final-time" style="color: #666; margin-bottom: 20px; font-weight: bold;"></p>
+        
+        <div class="form-group">
+            <label>Họ và tên *</label>
+            <input type="text" id="name" required placeholder="Nhập tên của bạn">
+        </div>
+        <div class="form-group">
+            <label>Số điện thoại *</label>
+            <input type="tel" id="phone" required placeholder="Nhập số điện thoại">
+        </div>
+        <div class="form-group">
+            <label>Bạn chia sẻ thêm về nội dung cần tham vấn</label>
+            <input type="text" id="note" placeholder="Chia sẻ ngắn gọn vấn đề của bạn">
+        </div>
+        <button class="submit-btn" onclick="submitBooking()">Xác nhận đặt lịch</button>
+        <button style="background: none; border: none; color: #0060e6; cursor: pointer; margin-top: 15px; width: 100%;" onclick="backToCalendar()">Quay lại chọn giờ</button>
+    </div>
+</div>
+
+<script>
+    let chosenDate = '';
+    let chosenTime = '';
+
+    function renderCalendar() {
+        const calendar = document.getElementById('calendar');
+        const monthYearDisplay = document.getElementById('month-year-display');
+        const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        
+        const today = new Date();
+        const currentMonth = today.getMonth(); 
+        const currentYear = today.getFullYear();
+        const currentDate = today.getDate();
+
+        if (monthYearDisplay) monthYearDisplay.innerText = `Tháng ${currentMonth + 1} Năm ${currentYear}`;
+
+        if (calendar) {
+            calendar.innerHTML = '';
+            daysOfWeek.forEach(day => {
+                calendar.innerHTML += `<div class="day-name">${day}</div>`;
+            });
+
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for(let i = 0; i < firstDayOfMonth; i++) calendar.innerHTML += `<div></div>`; 
+
+            for(let i = 1; i <= daysInMonth; i++) {
+                if (i < currentDate) {
+                    calendar.innerHTML += `<button class="day-btn" disabled>${i}</button>`;
+                } else {
+                    calendar.innerHTML += `<button class="day-btn" onclick="selectDate(this, ${i}, ${currentMonth + 1}, ${currentYear})">${i}</button>`;
+                }
+            }
+        }
+    }
+
+    async function selectDate(btn, day, month, year) {
+        document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const dateObj = new Date(year, month - 1, day);
+        const dayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        const dayOfWeek = dayNames[dateObj.getDay()];
+
+        const formattedMonth = month < 10 ? '0' + month : month;
+        const formattedDay = day < 10 ? '0' + day : day;
+        
+        chosenDate = `${formattedDay}/${formattedMonth}/${year}`;
+        document.getElementById('selected-date-text').innerText = `${dayOfWeek}, ${chosenDate}`;
+        document.getElementById('time-slots').style.display = 'flex';
+
+        // 1. Lấy danh sách giờ đã đặt từ Database
+        let bookedTimes = [];
+        try {
+            const response = await fetch('/api/bookings?date=${chosenDate}`);
+            if (response.ok) {
+                bookedTimes = await response.json();
+            }
+        } catch (error) {
+            console.error("Không thể tải dữ liệu lịch đã đặt:", error);
+        }
+        
+        // 2. Kiểm tra giờ quá khứ và giờ đã đặt
+        const now = new Date();
+        const isToday = (day === now.getDate() && (month - 1) === now.getMonth() && year === now.getFullYear());
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        document.querySelectorAll('.time-btn').forEach(timeBtn => {
+            const timeText = timeBtn.getAttribute('data-time');
+            timeBtn.innerText = timeText; // Reset lại chữ
+            const [btnHour, btnMinute] = timeText.split(':').map(Number);
+
+            // Xóa các CSS cũ
+            timeBtn.style.backgroundColor = '';
+            timeBtn.style.color = '';
+            timeBtn.style.borderColor = '';
+
+            if (bookedTimes.includes(timeText)) {
+                // Khóa vì có người đã đặt
+                timeBtn.disabled = true;
+                timeBtn.innerText = `${timeText} (Đã đặt)`;
+                timeBtn.style.backgroundColor = '#ffebee'; // Màu đỏ nhạt
+                timeBtn.style.color = '#c62828';
+                timeBtn.style.borderColor = '#ffcdd2';
+            } 
+            else if (isToday && (btnHour < currentHour || (btnHour === currentHour && btnMinute <= currentMinute))) {
+                // Khóa vì giờ đã trôi qua
+                timeBtn.disabled = true;
+                timeBtn.style.backgroundColor = '#f9f9f9';
+                timeBtn.style.color = '#aaaaaa';
+                timeBtn.style.borderColor = '#eaeaeb';
+            } 
+            else {
+                // Giờ trống, cho phép chọn
+                timeBtn.disabled = false;
+            }
+        });
+    }
+
+    function showForm(time) {
+        chosenTime = time;
+        document.getElementById('selection-area').style.display = 'none';
+        document.getElementById('booking-form').style.display = 'block';
+        document.getElementById('final-time').innerText = `🕒 ${chosenTime} - Ngày ${chosenDate}`;
+    }
+
+    function backToCalendar() {
+        document.getElementById('selection-area').style.display = 'flex';
+        document.getElementById('booking-form').style.display = 'none';
+    }
+
+    async function submitBooking() {
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const note = document.getElementById('note').value;
+        
+        if(!name || !phone) {
+            alert('Vui lòng nhập đủ tên và số điện thoại!');
+            return;
+        }
+
+        const bookingData = { name, phone, note, chosenDate, chosenTime };
+
+        try {
+            const response = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingData)
+            });
+
+            if (response.ok) {
+                alert(`Cảm ơn ${name}! Bạn đã đặt lịch thành công vào lúc ${chosenTime} Ngày ${chosenDate}.`);
+                window.location.reload();
+            } else {
+                alert('Có lỗi xảy ra từ hệ thống. Vui lòng kiểm tra lại máy chủ.');
+            }
+        } catch (error) {
+            alert('Không thể kết nối tới máy chủ. Vui lòng đảm bảo server đang chạy.');
+            console.error(error);
+        }
+    }
+
+    renderCalendar();
+</script>
+
+</body>
+</html>
