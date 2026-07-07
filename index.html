@@ -190,10 +190,10 @@
         document.getElementById('selected-date-text').innerText = `${dayOfWeek}, ${chosenDate}`;
         document.getElementById('time-slots').style.display = 'flex';
 
-        // 1. Lấy danh sách giờ đã đặt từ Database
+        // Gọi API với đường dẫn tương đối để tương thích cả máy tính và Render
         let bookedTimes = [];
         try {
-            const response = await fetch('/api/bookings?date=${chosenDate}`);
+            const response = await fetch(`/api/bookings?date=${chosenDate}`);
             if (response.ok) {
                 bookedTimes = await response.json();
             }
@@ -201,7 +201,6 @@
             console.error("Không thể tải dữ liệu lịch đã đặt:", error);
         }
         
-        // 2. Kiểm tra giờ quá khứ và giờ đã đặt
         const now = new Date();
         const isToday = (day === now.getDate() && (month - 1) === now.getMonth() && year === now.getFullYear());
         const currentHour = now.getHours();
@@ -212,28 +211,24 @@
             timeBtn.innerText = timeText; // Reset lại chữ
             const [btnHour, btnMinute] = timeText.split(':').map(Number);
 
-            // Xóa các CSS cũ
             timeBtn.style.backgroundColor = '';
             timeBtn.style.color = '';
             timeBtn.style.borderColor = '';
 
             if (bookedTimes.includes(timeText)) {
-                // Khóa vì có người đã đặt
                 timeBtn.disabled = true;
                 timeBtn.innerText = `${timeText} (Đã đặt)`;
-                timeBtn.style.backgroundColor = '#ffebee'; // Màu đỏ nhạt
+                timeBtn.style.backgroundColor = '#ffebee';
                 timeBtn.style.color = '#c62828';
                 timeBtn.style.borderColor = '#ffcdd2';
             } 
             else if (isToday && (btnHour < currentHour || (btnHour === currentHour && btnMinute <= currentMinute))) {
-                // Khóa vì giờ đã trôi qua
                 timeBtn.disabled = true;
                 timeBtn.style.backgroundColor = '#f9f9f9';
                 timeBtn.style.color = '#aaaaaa';
                 timeBtn.style.borderColor = '#eaeaeb';
             } 
             else {
-                // Giờ trống, cho phép chọn
                 timeBtn.disabled = false;
             }
         });
@@ -264,6 +259,7 @@
         const bookingData = { name, phone, note, chosenDate, chosenTime };
 
         try {
+            // Đã đổi sang đường dẫn tương đối
             const response = await fetch('/api/bookings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
