@@ -47,14 +47,26 @@ app.get('/api/bookings', async (req, res) => {
 app.post('/api/bookings', async (req, res) => {
     try {
         const { name, phone, note, chosenDate, chosenTime } = req.body;
+        
+        // 1. Lưu vào Database của hệ thống (MongoDB)
         const newBooking = new Booking({ name, phone, note, chosenDate, chosenTime });
         await newBooking.save();
+
+        // 2. Tự động xuất dữ liệu sang Google Sheets
+        // BƯỚC QUAN TRỌNG: Anh hãy xóa dòng chữ bên dưới và dán đường link Google Script của anh vào giữa 2 dấu nháy đơn
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwxjynfr9cRI_M2fFo_BWCHNh1FAMk23ZUmrJfwHVtSVH7DLHuqlWJ-JebmUA1J0s0/exec';
+        
+        fetch(GOOGLE_SHEET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, note, chosenDate, chosenTime })
+        }).catch(err => console.error("Lỗi gửi Google Sheets:", err));
+
         res.status(201).json({ message: 'Đặt lịch thành công!' });
     } catch (error) {
         res.status(500).json({ message: 'Có lỗi xảy ra, vui lòng thử lại.' });
     }
 });
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Máy chủ đang chạy tại cổng: ${PORT}`);
