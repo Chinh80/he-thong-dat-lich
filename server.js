@@ -54,7 +54,7 @@ app.post('/api/bookings', async (req, res) => {
 
         // 2. Tự động xuất dữ liệu sang Google Sheets
         // BƯỚC QUAN TRỌNG: Anh hãy xóa dòng chữ bên dưới và dán đường link Google Script của anh vào giữa 2 dấu nháy đơn
-        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwxjynfr9cRI_M2fFo_BWCHNh1FAMk23ZUmrJfwHVtSVH7DLHuqlWJ-JebmUA1J0s0/exec';
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbz3BLLFFt9YMTtIP73k8vVAYWq65iH8Gg0xcHy7EA/dev';
         
         fetch(GOOGLE_SHEET_URL, {
             method: 'POST',
